@@ -57,3 +57,13 @@ ssh admin@172.31.2.161 "docker pull siddharthp7890/iacsd; docker run -d --name t
 
 local machine GitHub push
 server ->all files is uploaded from local machine & query is executed( in same folder)
+
+
+successful command 
+---------------------------------------------------------------------------
+docker build -t siddharthp7890/iacsd .
+docker login -u siddharthp7890@gmail.com -p siddharthp7890@gmail.com
+docker push siddharthp7890/iacsd  
+ssh admin@172.31.2.161 "docker pull siddharthp7890/iacsd; docker run -d --name two -p 8001:80 siddharthp7890/iacsd"
+
+----------------------------------------------------------------------------
