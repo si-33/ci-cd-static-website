@@ -1,0 +1,73 @@
+Project: Web Application Deployment using Docker
+
+This note outlines the steps for deploying a simple web application using Docker, Docker Hub, and SSH.
+
+---
+
+1.  Project Files:
+    -   Dockerfile:
+        FROM ubuntu/apache2
+        COPY . /var/www/html/
+
+    -   index.html:
+        my 1st proj
+
+---
+
+2.  Local Machine / CI/CD Server Steps:
+
+    a.  Build Docker Image:
+        Navigate to your project directory.
+        docker build -t siddharthp7890/iacsd .
+
+    b.  Log In to Docker Hub:
+        docker login -u siddharthp7890@gmail.com -p YOUR_DOCKER_HUB_PASSWORD
+        (Replace with your username and password/access token)
+
+    c.  Push Docker Image to Docker Hub:
+        docker push siddharthp7890/iacsd
+
+---
+
+3.  Remote Server Preparation (One-time setup):
+
+    a.  Install Docker:
+        sudo apt-get update
+        sudo apt-get install docker.io -y
+
+    b.  Configure SSH Access (for automation):
+        -   Ensure your local/CI server's SSH public key is in ~/.ssh/authorized_keys on the remote server.
+            Example: ssh-copy-id -i /path/to/your/key.pub admin@172.31.2.161
+
+    c.  Add User to Docker Group:
+        sudo usermod -aG docker admin
+        (Replace 'admin' with your SSH user. Log out and back in for changes to apply.)
+
+    d.  Initialize Docker Swarm (Optional, for Swarm deployment):
+        docker swarm init
+
+---
+
+4.  Deployment Command (from Local Machine / CI/CD Server):
+
+    Option A: Simple Container Deployment
+    This runs a single container, mapping host port 8001 to container port 80.
+    ssh admin@172.31.2.161 "docker pull siddharthp7890/iacsd; docker run -d --name two -p 8001:80 siddharthp7890/iacsd"
+
+    (Access at: http://YOUR_SERVER_IP:8001)
+
+    Option B: Docker Swarm Service Deployment (Recommended for production)
+    This creates/updates a Swarm service with 2 replicas, mapping host port 82 to container port 80.
+    ssh admin@172.31.2.161 "docker service ls | grep 'mycluster' && docker service rm 'mycluster'; docker service create --name 'mycluster' --replicas 2 -p 82:80 siddharthp7890/iacsd"
+
+    (Access at: http://YOUR_SERVER_IP:82)
+
+---
+
+5.  Troubleshooting / Management Commands (on Remote Server):
+
+    -   List all containers: sudo docker ps -a
+    -   Stop a container: sudo docker stop <container_name_or_id>
+    -   List Docker images: sudo docker images
+    -   List Swarm services: sudo docker service ls
+    -   View Swarm service logs: sudo docker service logs <service_name>
